@@ -21,8 +21,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final cycleData = Provider.of<CycleData>(context);
-    final startDate = cycleData.mensturationStartDate;
+    final startDate = cycleData.periodStartDate;
     final details = startDate != null ? cycleData.periodDetails[startDate] : null;
+    debugPrint("Cycle Data Test: ${cycleData.calculateCyclePhases(context).toString()}");
 
     // Debugging: Add these prints to ensure values are being fetched
     debugPrint("Start Date: $startDate");

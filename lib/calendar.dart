@@ -45,6 +45,9 @@ class _CalendarPageState extends State<CalendarPage> {
                 _focusedDay = focusedDay;
               });
             },
+            availableCalendarFormats: const {
+              CalendarFormat.month : 'Month',
+            },
             eventLoader: (day) => events[day] ?? [],
 
 
@@ -68,7 +71,7 @@ class _CalendarPageState extends State<CalendarPage> {
             child: ElevatedButton(
               onPressed: _selectStartDate
               ,
-              child: const Text("Set Mensturation Start Date"),
+              child: const Text("Set Period Start Date"),
             ),
           ),
           if (_selectedDay != null) ...[
@@ -86,7 +89,6 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     );
   }
-
   void _addEvent(BuildContext context, CycleData cycleData) {
     if (_selectedDay == null) return;
 
@@ -138,7 +140,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
     if (details != null) {
       final cycleData = Provider.of<CycleData>(context, listen: false);
-      await cycleData.setMensturationStartDate(_selectedDay!);
+      await cycleData.setPeriodStartDate(_selectedDay!);
       await cycleData.setPeriodDetails(_selectedDay!, details);
       setState(() {
         // Change it back to cycleData._events if any problems occur.

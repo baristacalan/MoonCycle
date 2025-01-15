@@ -1,22 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:moon_cycle/settings_page.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CycleData extends ChangeNotifier {
-  DateTime? _mensturationStartDate;
+  DateTime? _periodStartDate;
   final Map<DateTime, Map<String, String>> _periodDetails = {};
   Map<DateTime, List<String>> _events = {}; // Add this for events
 
-  DateTime? get mensturationStartDate => _mensturationStartDate;
+  DateTime? get periodStartDate => _periodStartDate;
   Map<DateTime, Map<String, String>> get periodDetails => _periodDetails;
   Map<DateTime, List<String>> get events => _events;
 
-  // Save menstruation start date
-  Future<void> setMensturationStartDate(DateTime date) async {
-    _mensturationStartDate = date;
+  // Save period start date
+  Future<void> setPeriodStartDate(DateTime date) async {
+    _periodStartDate = date;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('mensturationStartDate', date.toIso8601String());
+    await prefs.setString('periodStartDate', date.toIso8601String());
   }
   // Save period details
   Future<void> setPeriodDetails(DateTime date, Map<String, String> details) async {
@@ -42,7 +44,6 @@ class CycleData extends ChangeNotifier {
     );
     await prefs.setString('events', encodedEvents);
   }
-
   // Remove event from a date
   Future<void> removeEvent(DateTime date) async {
     if (_events[date] != null && _events[date]!.isNotEmpty) {
@@ -57,7 +58,6 @@ class CycleData extends ChangeNotifier {
       await prefs.setString('events', encodedEvents);
     }
   }
-
   // Load events from SharedPreferences
   Future<void> loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -70,5 +70,30 @@ class CycleData extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Map<String, DateTimeRange> calculateCyclePhases(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if(_periodStartDate == null) return {};
+    final startDate = _periodStartDate!;
+    final cycleLength = settings.cycleLength;
+    final periodLength = settings.periodLength;
+    return{
+      "Menstrual": DateTimeRange(
+          start: startDate,
+          end: startDate.add(Duration(days: periodLength - 1))),
+
+      "Follicular": DateTimeRange(
+          start: startDate.add(Duration(days: periodLength)),
+          end: startDate.add(const Duration(days: 12))),
+
+      "Ovulation": DateTimeRange(
+          start: startDate.add(const Duration(days: 13)),
+          end: startDate.add(const Duration(days: 15 ))),
+
+      "Luteal": DateTimeRange(
+          start: startDate.add(const Duration(days: 16)),
+          end: startDate.add(Duration(days: cycleLength - 1))),
+    };
   }
 }

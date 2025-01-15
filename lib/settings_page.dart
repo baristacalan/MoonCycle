@@ -44,11 +44,10 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-
-  // Future<bool> _onWillPop() async {
-  //   final settings = Provider.of<SettingsProvider>(context);
+  // Future<bool> _onPop() async {
+  //   final settings = Provider.of<SettingsProvider>(context, listen: false);
   //
-  //   if (!_hasChanges) return true;
+  //   if (!_hasChanges) return true; // If no changes, allow navigation
   //
   //   final result = await showDialog<bool>(
   //     context: context,
@@ -64,7 +63,7 @@ class _SettingsPageState extends State<SettingsPage> {
   //         ),
   //         ElevatedButton(
   //           onPressed: () {
-  //             settings.saveSettings(); // Save changes
+  //             settings.saveSettings(); // Save settings changes
   //             Navigator.of(context).pop(true); // Allow navigation
   //           },
   //           child: const Text("Yes"),
@@ -76,37 +75,6 @@ class _SettingsPageState extends State<SettingsPage> {
   //   return result ?? false; // Default to false if dialog is dismissed
   // }
 
-  Future<bool> _onWillPop() async {
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-
-    if (!_hasChanges) return true; // If no changes, allow navigation
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Unsaved Changes"),
-        content: const Text("You have unsaved changes. Do you want to save them before leaving?"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false); // Don't save, just leave
-            },
-            child: const Text("No"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              settings.saveSettings(); // Save settings changes
-              Navigator.of(context).pop(true); // Allow navigation
-            },
-            child: const Text("Yes"),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false; // Default to false if dialog is dismissed
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: const Text("Settings", style: TextStyle(fontWeight: FontWeight.bold),),
         backgroundColor: Colors.pinkAccent,
         centerTitle: true,
       ),
