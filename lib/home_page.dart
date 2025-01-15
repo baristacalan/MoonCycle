@@ -5,7 +5,6 @@ import "calendar.dart";
 import 'cycle_data.dart';
 import 'settings_page.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -17,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   DateTime? _selectedDay; // Selected day
   int _currentIndex = 0; // Track the currently selected tab
 
-  DateTime lastPeriodStartDate = DateTime(2025, 2, 15);
+  DateTime lastPeriodStartDate = DateTime(2025, 2, 1); // Temporary value.
 
   @override
   Widget build(BuildContext context) {
@@ -69,9 +68,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   String getCurrentCyclePhase() {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     final today = DateTime.now();
-    final daysSinceLastPeriod = today.difference(lastPeriodStartDate).inDays % 28;
-    if (daysSinceLastPeriod <= 5) {
+    final cycleLength = settings.cycleLength;
+    final periodLength = settings.periodLength;
+
+    debugPrint("Cycle Length: ${cycleLength.toString()}");
+    debugPrint("Period Length: ${periodLength.toString()}");
+    final daysSinceLastPeriod = today.difference(lastPeriodStartDate).inDays % cycleLength;
+    if (daysSinceLastPeriod <= periodLength) {
       return "Menstrual Phase";
     } else if (daysSinceLastPeriod <= 13) {
       return "Follicular Phase";
@@ -279,7 +284,7 @@ class _HomePageState extends State<HomePage> {
                     _currentIndex = 1;
                   });
                 },
-              )
+              ),
             ],
           ),
         ),
