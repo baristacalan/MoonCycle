@@ -283,6 +283,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
+        const Text("No problems available.", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),),
       ],
     );
   }
