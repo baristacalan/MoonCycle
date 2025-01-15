@@ -283,7 +283,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        const Text("Kes Lan Sesini.", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),),
       ],
     );
   }
