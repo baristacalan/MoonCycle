@@ -33,6 +33,7 @@ class _CalendarPageState extends State<CalendarPage> {
         centerTitle: true,
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           TableCalendar(
             firstDay: DateTime.utc(DateTime.now().year - 10, 1, 1),
@@ -67,7 +68,7 @@ class _CalendarPageState extends State<CalendarPage> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(25),
             child: ElevatedButton(
               onPressed: _selectStartDate
               ,
@@ -89,6 +90,7 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     );
   }
+
   void _addEvent(BuildContext context, CycleData cycleData) {
     if (_selectedDay == null) return;
 

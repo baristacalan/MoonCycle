@@ -68,36 +68,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  String getCurrentCyclePhase() {
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    final today = DateTime.now();
-    final cycleLength = settings.cycleLength;
-    final periodLength = settings.periodLength;
+  Widget buildScrollableCalendar(BuildContext context) {
 
-    debugPrint("Cycle Length: ${cycleLength.toString()}");
-    debugPrint("Period Length: ${periodLength.toString()}");
-    final daysSinceLastPeriod = today.difference(lastPeriodStartDate).inDays % cycleLength;
-    if (daysSinceLastPeriod <= periodLength) {
-      return "Menstrual Phase";
-    } else if (daysSinceLastPeriod <= 13) {
-      return "Follicular Phase";
-    } else if (daysSinceLastPeriod <= 15) {
-      return "Ovulation Phase";
-    } else {
-      return "Luteal Phase";
-    }
-  }
+    final cycleData = Provider.of<CycleData>(context);
+    final phases = cycleData.calculateCyclePhases(context);
+    final phaseColors = cycleData.phaseColors;
 
-  Widget buildScrollableCalendar() {
     return SizedBox(
       height: 80,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 30, // Display 30 days
+        itemCount: 45, // Display 30 days
         itemBuilder: (context, index) {
-          final date = _focusedDay.add(Duration(days: index - 15)); // Days around the current date
+          final date = _focusedDay.add(Duration(days: index - 20)); // Days around the current date
           final isSelected = CalendarPage.isSameDay(date, _selectedDay);
           final isToday = CalendarPage.isSameDay(date, DateTime.now());
+          Color backgroundColor = Colors.white;
+          phases.forEach((phase, range) {
+            if(date.isAfter(range.start.subtract(const Duration(days:1))) &&
+                date.isBefore(range.end.add(const Duration(days:1)))) {
+              backgroundColor = phaseColors[phase] ?? Colors.grey[300]!;
+
+            }
+          });
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -118,12 +111,13 @@ class _HomePageState extends State<HomePage> {
               margin: const EdgeInsets.symmetric(horizontal: 8),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isToday ? Colors.pinkAccent : Colors.white,
+                color: isSelected ? Colors.pink.withOpacity(0.7)
+                : backgroundColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
                       ? Colors.pink
-                      : (isSelected ? Colors.pinkAccent : Colors.grey[300]!),
+                      : (isToday ? Colors.pinkAccent : Colors.grey[300]!),
                   width: 3,
                 ),
               ),
@@ -196,7 +190,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _getBody(int index, DateTime? startDate, Map<String, String>? details) {
-    final currentPhase = getCurrentCyclePhase();
+    final cycleData = Provider.of<CycleData>(context);
+    final String currentPhase = cycleData.calculateCurrentPhase(context);
+    debugPrint(currentPhase);
 
     if (index == 1) {
       // Calendar Page
@@ -209,28 +205,10 @@ class _HomePageState extends State<HomePage> {
     // Default: Home Page
     return Column(
       children: [
-        buildScrollableCalendar(),
+        buildScrollableCalendar(context),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.circle, color: Colors.pinkAccent, size: 12),
-                  SizedBox(width: 4),
-                  Text("Current Phase"),
-                ],
-              ),
-              Row(
-                children: [
-                  Icon(Icons.circle, color: Colors.lightBlue, size: 12),
-                  SizedBox(width: 4),
-                  Text("Period Duration"),
-                ],
-              ),
-            ],
-          ),
+
         ),
         Padding(
           padding: const EdgeInsets.all(16),

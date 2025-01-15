@@ -12,6 +12,12 @@ class CycleData extends ChangeNotifier {
   DateTime? get periodStartDate => _periodStartDate;
   Map<DateTime, Map<String, String>> get periodDetails => _periodDetails;
   Map<DateTime, List<String>> get events => _events;
+  final Map<String, Color> phaseColors = {
+    "Menstrual": Colors.red,
+    "Follicular": Colors.blue,
+    "Ovulation": Colors.green,
+    "Luteal": Colors.orange,
+  };
 
   // Save period start date
   Future<void> setPeriodStartDate(DateTime date) async {
@@ -48,7 +54,11 @@ class CycleData extends ChangeNotifier {
   Future<void> removeEvent(DateTime date) async {
     if (_events[date] != null && _events[date]!.isNotEmpty) {
       _events[date]!.removeLast();
-      _periodDetails[date]!.clear();
+
+      if(_periodStartDate == date) {
+        _periodStartDate = null;
+      }
+      _periodDetails.remove(date);
       notifyListeners();
 
       final prefs = await SharedPreferences.getInstance();
@@ -95,5 +105,18 @@ class CycleData extends ChangeNotifier {
           start: startDate.add(const Duration(days: 16)),
           end: startDate.add(Duration(days: cycleLength - 1))),
     };
+  }
+
+  String calculateCurrentPhase(BuildContext context) {
+    if(_periodStartDate == null) return "No data";
+    final now = DateTime.now();
+    final cyclePhases = calculateCyclePhases(context);
+
+    for(var entry in cyclePhases.entries) {
+      if(now.isAfter(entry.value.start) && now.isBefore(entry.value.end)) {
+        return entry.key;
+      }
+    }
+    return "No data";
   }
 }
