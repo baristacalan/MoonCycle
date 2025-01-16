@@ -11,12 +11,43 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>  /*with AutomaticKeepAliveClientMixin*/{
   final DateTime _focusedDay = DateTime.now(); // Current visible date
   DateTime? _selectedDay; // Selected day
   int _currentIndex = 0; // Track the currently selected tab
 
-  DateTime lastPeriodStartDate = DateTime(2025, 2, 1); // Temporary value.
+  late ScrollController _scrollController;
+  bool _hasScrolledToToday = false;
+
+  // @override
+  // bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if(!_hasScrolledToToday) {
+        _scrollToToday();
+        _hasScrolledToToday = true;
+      }
+    });
+  }
+  void _scrollToToday() {
+    const double itemWidth = 76;
+    const int daysToCenter = 15;
+    const double todayPosition = itemWidth * daysToCenter;
+    _scrollController.animateTo(
+      todayPosition,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+  @override
+  void dispose() {
+    _scrollController.dispose(); // Dispose of the controller when the widget is removed
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +79,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _getBody(_currentIndex, startDate, details),
+      body:_getBody(_currentIndex, startDate, details),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -77,10 +108,11 @@ class _HomePageState extends State<HomePage> {
     return SizedBox(
       height: 80,
       child: ListView.builder(
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        itemCount: 45, // Display 30 days
+        itemCount: 35, // Display 30 days
         itemBuilder: (context, index) {
-          final date = _focusedDay.add(Duration(days: index - 20)); // Days around the current date
+          final date = _focusedDay.add(Duration(days: index - 15)); // Days around the current date
           final isSelected = CalendarPage.isSameDay(date, _selectedDay);
           final isToday = CalendarPage.isSameDay(date, DateTime.now());
           Color backgroundColor = Colors.white;
@@ -112,7 +144,8 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.pink.withOpacity(0.7)
-                : backgroundColor,
+                : isToday ?
+                Colors.pinkAccent.withOpacity(0.5) : backgroundColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
@@ -193,6 +226,20 @@ class _HomePageState extends State<HomePage> {
     final cycleData = Provider.of<CycleData>(context);
     final String currentPhase = cycleData.calculateCurrentPhase(context);
     debugPrint(currentPhase);
+    final phases = cycleData.calculateCyclePhases(context);
+    final phaseColors = cycleData.phaseColors;
+    String selectedPhase = "No data";
+    Color? selectedPhaseColor;
+
+    if (_selectedDay != null) {
+      phases.forEach((phase, range) {
+        if (_selectedDay!.isAfter(range.start.subtract(const Duration(days: 1))) &&
+            _selectedDay!.isBefore(range.end.add(const Duration(days: 1)))) {
+          selectedPhase = phase;
+          selectedPhaseColor = phaseColors[phase];
+        }
+      });
+    }
 
     if (index == 1) {
       // Calendar Page
@@ -206,16 +253,40 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         buildScrollableCalendar(context),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-
-        ),
+        if (_selectedDay != null && selectedPhase != "No data")
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Selected Phase: $selectedPhase",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: selectedPhaseColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  DateFormat.yMMMMd().format(_selectedDay!),
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                ),
+              ],
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(
-            "Current Cycle Phase: $currentPhase",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                "Current Cycle Phase: $currentPhase",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Icon(Icons.circle_rounded, color: phaseColors[currentPhase],)
+            ],
+          )
         ),
         Expanded(
           child: ListView(

@@ -25,6 +25,8 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final cycleData = Provider.of<CycleData>(context);
     final events = cycleData.events;
+    final phases = cycleData.calculateCyclePhases(context);
+    final phaseColors = cycleData.phaseColors;
 
     return Scaffold(
       appBar: AppBar(
@@ -49,9 +51,45 @@ class _CalendarPageState extends State<CalendarPage> {
             availableCalendarFormats: const {
               CalendarFormat.month : 'Month',
             },
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, date, _) {
+                Color? backgroundColor;
+                phases.forEach((phase, range) {
+                  if (date.isAfter(range.start.subtract(const Duration(days: 1))) &&
+                      date.isBefore(range.end.add(const Duration(days: 1)))) {
+                    backgroundColor = phaseColors[phase];
+                  }
+                });
+
+                return Container(
+                  margin: const EdgeInsets.all(6.0),
+                  decoration: BoxDecoration(
+                    color: backgroundColor ?? Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${date.day}',
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
+                );
+              },
+              selectedBuilder: (context, date, _) => Container(
+                margin: const EdgeInsets.all(6.0),
+                decoration: BoxDecoration(
+                  color: Colors.pink,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
             eventLoader: (day) => events[day] ?? [],
-
-
           ),
           const SizedBox(height: 16),
           Row(
@@ -70,8 +108,7 @@ class _CalendarPageState extends State<CalendarPage> {
           Padding(
             padding: const EdgeInsets.all(25),
             child: ElevatedButton(
-              onPressed: _selectStartDate
-              ,
+              onPressed: _selectStartDate,
               child: const Text("Set Period Start Date"),
             ),
           ),
@@ -81,6 +118,53 @@ class _CalendarPageState extends State<CalendarPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
+            Builder(
+              builder: (context) {
+                final cycleData = Provider.of<CycleData>(context, listen: false);
+                final phases = cycleData.calculateCyclePhases(context);
+                final phaseColors = cycleData.phaseColors;
+
+                String? selectedPhase;
+                Color? selectedColor;
+
+                phases.forEach((phase, range) {
+                  if (_selectedDay!.isAfter(range.start.subtract(const Duration(days: 1))) &&
+                      _selectedDay!.isBefore(range.end.add(const Duration(days: 1)))) {
+                    selectedPhase = phase;
+                    selectedColor = phaseColors[phase];
+                  }
+                });
+
+                if (selectedPhase != null) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: selectedColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Phase: $selectedPhase",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: selectedColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink(); // If no phase, return empty space
+              },
+            ),
+
             ..._getEventsForDay(events, _selectedDay!).map((event) => ListTile(
               title: Text(event),
               leading: const Icon(Icons.event, color: Colors.pinkAccent),
@@ -162,5 +246,4 @@ class _CalendarPageState extends State<CalendarPage> {
   List<String> _getEventsForDay(Map<DateTime, List<String>> events, DateTime day) {
     return events[day] ?? [];
   }
-
 }
