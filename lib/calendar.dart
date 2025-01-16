@@ -161,7 +161,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   );
                 }
-                return const SizedBox.shrink(); // If no phase, return empty space
+                return const SizedBox.shrink();
               },
             ),
 
@@ -217,7 +217,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void _selectStartDate() async {
     if (_selectedDay == null) return;
-    // Navigate to PeriodDetailsPage and wait for details
     final details = await Navigator.push(
       context,
       MaterialPageRoute(

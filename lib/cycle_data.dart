@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CycleData extends ChangeNotifier {
   DateTime? _periodStartDate;
   final Map<DateTime, Map<String, String>> _periodDetails = {};
-  Map<DateTime, List<String>> _events = {}; // Add this for events
+  Map<DateTime, List<String>> _events = {};
 
   DateTime? get periodStartDate => _periodStartDate;
   Map<DateTime, Map<String, String>> get periodDetails => _periodDetails;
@@ -19,14 +19,13 @@ class CycleData extends ChangeNotifier {
     "Luteal": Colors.orange,
   };
 
-  // Save period start date
   Future<void> setPeriodStartDate(DateTime date) async {
     _periodStartDate = date;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('periodStartDate', date.toIso8601String());
   }
-  // Save period details
+
   Future<void> setPeriodDetails(DateTime date, Map<String, String> details) async {
     _periodDetails[date] = details;
     notifyListeners();
@@ -36,7 +35,7 @@ class CycleData extends ChangeNotifier {
     );
     await prefs.setString('periodDetails', encodedDetails);
   }
-  // Add event to a date
+
   Future<void> addEvent(DateTime date, String event) async {
     if (_events[date] == null) {
       _events[date] = [];
@@ -50,7 +49,7 @@ class CycleData extends ChangeNotifier {
     );
     await prefs.setString('events', encodedEvents);
   }
-  // Remove event from a date
+
   Future<void> removeEvent(DateTime date) async {
     if (_events[date] != null && _events[date]!.isNotEmpty) {
       _events[date]!.removeLast();
@@ -68,7 +67,7 @@ class CycleData extends ChangeNotifier {
       await prefs.setString('events', encodedEvents);
     }
   }
-  // Load events from SharedPreferences
+
   Future<void> loadData() async {
     final prefs = await SharedPreferences.getInstance();
 

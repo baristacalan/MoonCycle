@@ -59,7 +59,6 @@ class _PeriodDetailsPageState extends State<PeriodDetailsPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Save details and return
                 Navigator.pop(context, {
                   'bleeding': bleedingLevel,
                   'mood': mood,
