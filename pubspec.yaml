@@ -41,6 +41,12 @@ dependencies:
   shared_preferences: ^2.1.0
   flutter_native_splash: ^2.2.20
 
+flutter_native_splash:
+  color: "#ffffff" # Background color of the splash screen
+  image: assets/splash_screen.png # Path to your splash image
+  android: true # Enable splash screen for Android
+  ios: true # Enable splash screen for iOS
+  android_gravity: center # Align the image in the center (Android only)
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +69,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/splash_screen.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

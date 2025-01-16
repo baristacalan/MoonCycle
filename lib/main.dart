@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moon_cycle/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'cycle_data.dart';
 import 'calendar.dart';
@@ -38,7 +39,7 @@ class PeriodApp extends StatelessWidget {
             '/calendar': (context) => const CalendarPage(),
             '/settings': (context) => const SettingsPage(),
           },
-          home: const HomePage(),
+          home: const SplashScreen(),
           theme: themeNotifier.isDarkMode
               ? ThemeData.dark() // Dark mode
               : ThemeData.light(), // Light mode
