@@ -88,6 +88,7 @@ class CycleData extends ChangeNotifier {
     final startDate = _periodStartDate!;
     final cycleLength = settings.cycleLength;
     final periodLength = settings.periodLength;
+
     return{
       "Menstrual": DateTimeRange(
           start: startDate,
